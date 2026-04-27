@@ -1,0 +1,148 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../packages/core/src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String          @id @default(cuid())
+  email          String          @unique
+  /** Null for users who only sign in with GitHub OAuth. */
+  passwordHash   String?
+  /** GitHub numeric user id as string; set when account is linked via OAuth. */
+  githubId       String?         @unique
+  /** OAuth access token from GitHub (repo scope); used to list repos and sync integration. */
+  githubAccessToken String?      @db.Text
+  name           String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  organizations  Organization[]
+  triggeredRuns  ComplianceRun[] @relation("TriggeredBy")
+}
+
+model Organization {
+  id               String           @id @default(cuid())
+  name             String
+  slug             String           @unique
+  ownerUserId      String
+  owner            User             @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+  integrations     Integration[]
+  complianceRuns   ComplianceRun[]
+  policyDocuments  PolicyDocument[]
+  productSummary          String?   @db.Text
+  primaryComplianceGoal   String?
+  onboardingSkippedAt     DateTime?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@index([ownerUserId])
+}
+
+enum IntegrationType {
+  GITHUB
+  AWS
+}
+
+enum IntegrationStatus {
+  CONNECTED
+  DISCONNECTED
+}
+
+model Integration {
+  id             String            @id @default(cuid())
+  organizationId String
+  organization   Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  type           IntegrationType
+  status         IntegrationStatus @default(DISCONNECTED)
+  config         Json
+  lastSyncedAt   DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@unique([organizationId, type])
+}
+
+enum ComplianceRunStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+model ComplianceRun {
+  id                String              @id @default(cuid())
+  organizationId    String
+  organization      Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  triggeredByUserId String
+  triggeredBy       User                @relation("TriggeredBy", fields: [triggeredByUserId], references: [id], onDelete: Restrict)
+  status            ComplianceRunStatus @default(PENDING)
+  overallScore      Int?
+  startedAt         DateTime            @default(now())
+  finishedAt        DateTime?
+  storageRootHash   String?
+  storageTxHash     String?
+  ogEvidenceUri     String?
+  ogEvidenceHash    String?
+  routerModel       String?
+  errorMessage      String?
+  /** Which compliance agent / framework lens produced this run (e.g. soc2, gdpr). */
+  agentId           String              @default("soc2")
+  /** Live activity log for the dashboard run modal (phases + per-control lines). */
+  progressLog       Json?
+  controlResults    ControlResult[]
+  report            Report?
+
+  @@index([organizationId, startedAt])
+}
+
+enum ControlResultStatus {
+  PASS
+  FAIL
+  UNKNOWN
+}
+
+model ControlResult {
+  id              String              @id @default(cuid())
+  complianceRunId String
+  complianceRun   ComplianceRun       @relation(fields: [complianceRunId], references: [id], onDelete: Cascade)
+  controlId       String
+  status          ControlResultStatus
+  rawData         Json
+  evidencePointer String?
+  message         String
+
+  @@index([complianceRunId])
+}
+
+model Report {
+  id              String        @id @default(cuid())
+  complianceRunId String        @unique
+  complianceRun   ComplianceRun @relation(fields: [complianceRunId], references: [id], onDelete: Cascade)
+  aiSummary       String        @db.Text
+  aiDetails       Json
+  createdAt       DateTime      @default(now())
+}
+
+enum PolicyDocumentKind {
+  SECURITY
+  IR
+}
+
+model PolicyDocument {
+  id              String               @id @default(cuid())
+  organizationId  String
+  organization    Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  kind            PolicyDocumentKind
+  fileName        String
+  mimeType        String
+  storageRootHash String?
+  storageTxHash   String?
+  textExtract     String?              @db.Text
+  createdAt       DateTime             @default(now())
+
+  @@index([organizationId, kind])
+}
