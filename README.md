@@ -7,7 +7,7 @@
 | **Project name** | Prooflane |
 | **Short description** | Blockchain-backed compliance automation: multi-framework agent auditors, live control scoring, weighted readiness, evidence bundles anchored via **0G Storage**, executive narratives via **0G Compute** (OpenAI-compatible), public trust pages. |
 | **Public GitHub** | [github.com/mbcse/prooflane](https://github.com/mbcse/prooflane) (this repo: README + setup below) |
-| **Live demo** | Web: [prooflaneagents.vercel.app](https://prooflaneagents.vercel.app) · API: [prooflane.onrender.com](https://prooflane.onrender.com) |
+| **Live demo** | [prooflaneagents.vercel.app](https://prooflaneagents.vercel.app) |
 | **Protocol / SDKs** | See [Protocol features and SDKs](#protocol-features-and-sdks) |
 | **Contracts / chain** | See [On-chain references (Galileo testnet)](#on-chain-references-galileo-testnet) |
 
