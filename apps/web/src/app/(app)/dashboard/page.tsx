@@ -19,7 +19,7 @@ type DashboardPayload = {
     productSummary: string | null;
     primaryComplianceGoal: string | null;
     onboardingSkippedAt: string | null;
-    integrations: { type: string; status: string }[];
+    integrations: { type: string; status: string; owner?: string; repo?: string }[];
   };
   latestRun: {
     id: string;
@@ -100,6 +100,7 @@ export default async function DashboardPage() {
   const aws = org.integrations.find((i) => i.type === "AWS");
   const ghOk = gh?.status === "CONNECTED";
   const awsOk = aws?.status === "CONNECTED";
+  const displayName = gh?.repo?.trim() || org.name;
   const connectedCount = [ghOk, awsOk].filter(Boolean).length;
   const progressPct = latestRun?.overallScore != null ? latestRun.overallScore : 0;
 
@@ -125,7 +126,7 @@ export default async function DashboardPage() {
             </Badge>
           </div>
           <h1 className="mt-4 font-[family-name:var(--font-heading)] text-3xl font-semibold tracking-tight text-white sm:text-4xl md:text-5xl">
-            {org.name}
+            {displayName}
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-white/55 sm:text-base">
             One place to run your security program, collect evidence, and export what revenue and

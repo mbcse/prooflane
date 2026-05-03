@@ -15,6 +15,7 @@ type AiDetails = {
 
 type TrustPayload = {
   organization: { id: string; name: string; slug: string };
+  githubIntegration: { owner: string; repo: string } | null;
   run: {
     overallScore: number | null;
     finishedAt: string | null;
@@ -40,7 +41,8 @@ export default async function TrustPage({ params }: Params) {
   }
 
   const payload = parsed.data;
-  const { organization: org, run, connectedTypes } = payload;
+  const { organization: org, githubIntegration, run, connectedTypes } = payload;
+  const displayName = githubIntegration?.repo?.trim() || org.name;
   const monitors = connectedTypes.join(" · ") || "None connected";
   const details = (run?.report?.aiDetails as AiDetails | null) ?? {};
 
@@ -49,7 +51,7 @@ export default async function TrustPage({ params }: Params) {
       <div className="mx-auto max-w-3xl px-6 py-16 space-y-10">
         <div className="text-center space-y-2">
           <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Trust report</p>
-          <h1 className="text-3xl font-semibold tracking-tight">{org.name}</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">{displayName}</h1>
           <p className="text-muted-foreground text-sm">
             Automated readiness snapshot, not a formal audit.
           </p>

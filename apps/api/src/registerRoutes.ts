@@ -398,6 +398,17 @@ export function registerRoutes(app: Application) {
         where: { id: userId },
         select: { githubAccessToken: true },
       });
+      const integrationSummary = org.integrations.map((i: (typeof org.integrations)[number]) => {
+        const cfg = i.config as Record<string, unknown>;
+        return {
+          id: i.id,
+          type: i.type,
+          status: i.status,
+          lastSyncedAt: i.lastSyncedAt,
+          owner: i.type === "GITHUB" && cfg.owner ? String(cfg.owner) : undefined,
+          repo: i.type === "GITHUB" && cfg.repo ? String(cfg.repo) : undefined,
+        };
+      });
       res.json({
         organization: {
           id: org.id,
@@ -407,12 +418,7 @@ export function registerRoutes(app: Application) {
           primaryComplianceGoal: org.primaryComplianceGoal,
           onboardingSkippedAt: org.onboardingSkippedAt,
           githubOAuthConnected: Boolean(userRow?.githubAccessToken),
-          integrations: org.integrations.map((i: (typeof org.integrations)[number]) => ({
-            id: i.id,
-            type: i.type,
-            status: i.status,
-            lastSyncedAt: i.lastSyncedAt,
-          })),
+          integrations: integrationSummary,
         },
         latestRun: latestRun
           ? {
@@ -687,10 +693,18 @@ export function registerRoutes(app: Application) {
       const integrations = await prisma.integration.findMany({
         where: { organizationId: org.id, status: "CONNECTED" },
       });
+      const ghInt = integrations.find((i: (typeof integrations)[number]) => i.type === "GITHUB");
+      const ghCfg = ghInt?.config as { owner?: string; repo?: string } | undefined;
       res.json({
         organization: { id: org.id, name: org.name, slug: org.slug },
         run,
         connectedTypes: integrations.map((i: (typeof integrations)[number]) => i.type),
+        githubIntegration: ghInt
+          ? {
+              owner: ghCfg?.owner ?? "",
+              repo: ghCfg?.repo ?? "",
+            }
+          : null,
       });
     }),
   );
