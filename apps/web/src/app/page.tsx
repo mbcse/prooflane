@@ -75,7 +75,7 @@ export default async function HomePage() {
           <div className="relative mx-auto max-w-6xl px-4 pb-24 pt-20 sm:px-6 sm:pb-32 sm:pt-28">
             <p className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-medium text-teal-300/90 backdrop-blur-sm">
               <Shield className="size-3.5" aria-hidden />
-              SOC 2 programs · continuous controls · AI narratives · proof you can share
+              Agent auditors · continuous controls · blockchain-powered proof
             </p>
             <h1 className="max-w-4xl font-[family-name:var(--font-heading)] text-4xl font-semibold leading-[1.05] tracking-tight text-white sm:text-5xl md:text-6xl md:leading-[1.02]">
               Compliance that closes deals.
@@ -84,11 +84,11 @@ export default async function HomePage() {
               </span>
             </h1>
             <p className="mt-8 max-w-2xl text-lg leading-relaxed text-white/70 sm:text-xl">
-              Stop drowning in screenshots and spreadsheets. {PRODUCT_NAME} runs SOC 2-style
-              controls, pulls evidence from GitHub and AWS, and uses AI to summarize gaps. Your
-              receipts can be anchored on{" "}
-              <span className="text-white/90">0G decentralized storage</span> so evidence is
-              harder to dispute in buyer and auditor reviews.
+              Stop drowning in screenshots and spreadsheets. {PRODUCT_NAME} deploys agent auditors
+              that check live controls, package evidence, and create board-ready compliance
+              narratives. Your receipts can be anchored on{" "}
+              <span className="text-white/90">0G decentralized storage</span> so evidence is harder
+              to dispute in buyer and auditor reviews.
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-3">
               <Link
@@ -114,7 +114,7 @@ export default async function HomePage() {
             <ul className="mt-14 flex flex-wrap gap-x-10 gap-y-3 text-sm text-white/55">
               {[
                 "Continuous control monitoring",
-                "AI-generated readiness reports",
+                "Agent auditor readiness reports",
                 "Public trust pages for prospects",
               ].map((t) => (
                 <li key={t} className="flex items-center gap-2">
@@ -225,8 +225,8 @@ export default async function HomePage() {
                 Agentic compliance, built for how you ship.
               </h2>
               <p className="mt-4 text-white/60">
-                Connect real infrastructure, run repeatable checks, export narratives your sales
-                team can share. Not a slide deck from last quarter.
+                Connect real infrastructure, run repeatable agent audits, export narratives your
+                sales team can share. Not a slide deck from last quarter.
               </p>
             </div>
             <div className="mt-14 grid gap-6 lg:grid-cols-3">
@@ -238,7 +238,7 @@ export default async function HomePage() {
                 },
                 {
                   icon: Sparkles,
-                  title: "AI that speaks auditor",
+                  title: "Agent auditors that speak compliance",
                   body: "Each run produces structured results and an executive-ready summary of strengths and gaps.",
                 },
                 {
@@ -313,7 +313,7 @@ export default async function HomePage() {
               </h2>
               <p className="mt-4 max-w-xl text-white/60">
                 Whether you are chasing your first SOC 2 or tightening controls before Series B
-                diligence, one workspace for monitoring, evidence, and AI-written narratives.
+                diligence, one workspace for monitoring, evidence, and agent auditor narratives.
               </p>
               <Link
                 href="/register"
@@ -337,8 +337,8 @@ export default async function HomePage() {
               {PRODUCT_NAME}
             </p>
             <p className="mt-2 max-w-xs text-sm text-white/45">
-              Compliance automation with AI and durable evidence for teams who sell to the
-              enterprise.
+              Blockchain-powered compliance automation and durable evidence for teams who sell to
+              the enterprise.
             </p>
           </div>
           <div className="flex flex-wrap gap-8 text-sm text-white/55">
