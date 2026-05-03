@@ -75,7 +75,7 @@ export default async function HomePage() {
           <div className="relative mx-auto max-w-6xl px-4 pb-24 pt-20 sm:px-6 sm:pb-32 sm:pt-28">
             <p className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-medium text-teal-300/90 backdrop-blur-sm">
               <Shield className="size-3.5" aria-hidden />
-              Agent auditors · continuous controls · blockchain-powered proof
+              Agent auditors · 0G Compute · blockchain-powered proof
             </p>
             <h1 className="max-w-4xl font-[family-name:var(--font-heading)] text-4xl font-semibold leading-[1.05] tracking-tight text-white sm:text-5xl md:text-6xl md:leading-[1.02]">
               Compliance that closes deals.
@@ -85,10 +85,10 @@ export default async function HomePage() {
             </h1>
             <p className="mt-8 max-w-2xl text-lg leading-relaxed text-white/70 sm:text-xl">
               Stop drowning in screenshots and spreadsheets. {PRODUCT_NAME} deploys agent auditors
-              that check live controls, package evidence, and create board-ready compliance
-              narratives. Your receipts can be anchored on{" "}
-              <span className="text-white/90">0G decentralized storage</span> so evidence is harder
-              to dispute in buyer and auditor reviews.
+              that check live controls, package evidence, and create board-ready compliance reports.
+              0G Compute powers the narrative layer, while{" "}
+              <span className="text-white/90">0G decentralized storage</span> anchors evidence
+              receipts that are harder to dispute in buyer and auditor reviews.
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-3">
               <Link
@@ -239,7 +239,7 @@ export default async function HomePage() {
                 {
                   icon: Sparkles,
                   title: "Agent auditors that speak compliance",
-                  body: "Each run produces structured results and an executive-ready summary of strengths and gaps.",
+                  body: "Each run produces structured results and an executive-ready summary, with 0G Compute available for the report narrative layer.",
                 },
                 {
                   icon: Blocks,
@@ -278,7 +278,7 @@ export default async function HomePage() {
                   Trust isn’t a folder on a drive.
                 </h2>
                 <p className="mt-5 text-white/65 leading-relaxed">
-                  {PRODUCT_NAME} can pin compliance artifacts and run summaries using{" "}
+                  {PRODUCT_NAME} uses 0G as the decentralized layer behind reports and evidence:{" "}
                   <a
                     href="https://docs.0g.ai/"
                     className="font-medium text-teal-300 underline decoration-teal-500/50 underline-offset-4 hover:text-teal-200"
@@ -287,8 +287,8 @@ export default async function HomePage() {
                   >
                     0G Storage &amp; Compute
                   </a>
-                  . Your evidence trail is harder to repudiate and easier to share under NDA with
-                  serious buyers.
+                  . Storage anchors tamper-evident receipts, and Compute supports the agent report
+                  layer with verifiable infrastructure for serious buyer reviews.
                 </p>
               </div>
               <div className="rounded-3xl border border-white/10 bg-black/30 p-8 font-mono text-xs text-white/50">
@@ -337,8 +337,8 @@ export default async function HomePage() {
               {PRODUCT_NAME}
             </p>
             <p className="mt-2 max-w-xs text-sm text-white/45">
-              Blockchain-powered compliance automation and durable evidence for teams who sell to
-              the enterprise.
+              Blockchain-powered compliance automation with 0G Compute, durable evidence, and trust
+              workflows for teams who sell to the enterprise.
             </p>
           </div>
           <div className="flex flex-wrap gap-8 text-sm text-white/55">
