@@ -15,11 +15,8 @@ packages/core/src/**/*.js
 # Prisma client (regenerate: npm install && npx prisma generate)
 packages/core/src/generated/
 
-# local-only maintenance scripts
-scripts/git-history-backfill.sh
-
 # dependencies
-/node_modules
+node_modules/
 /.pnp
 .pnp.*
 .yarn/*
