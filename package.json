@@ -16,7 +16,7 @@
     "build": "prisma generate && npm run build -w @openagents/core && npm run build -w apps/api && npm run build -w apps/web",
     "start": "npm run start -w apps/web",
     "lint": "npm run lint -w apps/web",
-    "postinstall": "prisma generate",
+    "postinstall": "node -e \"console.log('postinstall: prisma generation runs in build/db scripts')\"",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate deploy",
     "db:push": "prisma db push",
