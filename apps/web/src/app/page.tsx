@@ -1,6 +1,4 @@
 import Link from "next/link";
-import { auth } from "@/auth";
-import { redirect } from "next/navigation";
 import { buttonVariants } from "@/components/ui/button";
 import { PRODUCT_NAME } from "@/lib/brand";
 import { cn } from "@/lib/utils";
@@ -19,9 +17,6 @@ import {
 const FRAMEWORKS = ["SOC 2", "HIPAA", "GDPR", "PCI DSS", "ISO 27001", "ISO 42001"] as const;
 
 export default async function HomePage() {
-  const session = await auth();
-  if (session) redirect("/dashboard");
-
   return (
     <div className="min-h-screen flex flex-col bg-[oklch(0.12_0.02_260)] text-foreground">
       <header className="sticky top-0 z-50 border-b border-white/10 bg-[oklch(0.12_0.02_260)]/85 backdrop-blur-xl">
