@@ -2,6 +2,15 @@
 
 *A blockchain-backed compliance transparency layer for companies: autonomous agents continuously verify controls, score readiness, and anchor evidence on 0G.*
 
+| Submission item | Details |
+|-----------------|--------|
+| **Project name** | Prooflane |
+| **Short description** | Blockchain-backed compliance automation: multi-framework agent auditors, live control scoring, weighted readiness, evidence bundles anchored via **0G Storage**, executive narratives via **0G Compute** (OpenAI-compatible), public trust pages. |
+| **Public GitHub** | [github.com/mbcse/prooflane](https://github.com/mbcse/prooflane) (this repo: README + setup below) |
+| **Live demo** | Web: [prooflaneagents.vercel.app](https://prooflaneagents.vercel.app) · API: [prooflane.onrender.com](https://prooflane.onrender.com) |
+| **Protocol / SDKs** | See [Protocol features and SDKs](#protocol-features-and-sdks) |
+| **Contracts / chain** | See [On-chain references (Galileo testnet)](#on-chain-references-galileo-testnet) |
+
 ---
 
 ## The problem
@@ -107,6 +116,80 @@ Environment variables and operational notes live in **`.env.example`**. Funding 
 
 ---
 
+## Protocol features and SDKs
+
+| Layer | What Prooflane uses |
+|-------|---------------------|
+| **0G Storage** | Official **`@0gfoundation/0g-storage-ts-sdk`**: content-addressed evidence bundles (`MemData` + indexer upload), root hash and chain-facing transaction hash, explorer URLs consumed by the UI. |
+| **0G Compute** | **`@0gfoundation/0g-compute-ts-sdk`** (CLI/setup scripts at repo root) plus **`openai`** client against the OpenAI-compatible **ZG Compute** service URL for grounded executive JSON narratives merged with live scores. |
+| **Chain access** | **`ethers`** against Galileo EVM RPC for signing storage flows and compute wallet flows configured in `.env`. |
+| **Cloud evidence** | **AWS SDK** (`CloudTrail`, `IAM`, `S3`, `STS`) for infrastructure checks when AWS is connected. |
+| **Repo evidence** | **GitHub REST API** via integration tokens for branch protection, reviews, and governance signals. |
+| **Data** | **PostgreSQL** + **Prisma** (`@prisma/client`) for orgs, runs, controls, reports, progress logs. |
+| **Product surface** | **Next.js** (Auth.js session), **Express** API for runs, integrations, webhooks. |
+
+Galileo endpoints used by default are documented in **`.env.example`** (`ZERO_G_EVM_RPC`, `ZERO_G_INDEXER_RPC`, `ZG_RPC_ENDPOINT`, and compute env vars).
+
+---
+
+## On-chain references (Galileo testnet)
+
+Prooflane is an application; you deploy the **web and API**, not a separate custom smart contract for the product logic. On-chain touchpoints are **0G infrastructure** and recorded **transaction hashes** from evidence uploads.
+
+| Item | Value / notes |
+|------|----------------|
+| **Network** | 0G Galileo **testnet** |
+| **EVM RPC (default)** | `https://evmrpc-testnet.0g.ai` |
+| **Default 0G Compute provider address** (`OG_COMPUTE_PROVIDER` in `.env.example`) | `0xa48f01287233509FD694a22Bf840225062E67836` |
+
+---
+
+## Example agent (framework)
+
+Agents are plain TypeScript modules that implement **`ComplianceAgent`**: they decide which controls apply (`appliesTo`), supply LLM framing (`systemPromptPrefix`), and register in **`AGENTS`**.
+
+**Registry** ([`packages/core/agents/registry.ts`](packages/core/agents/registry.ts)):
+
+```typescript
+import { agent as gdpr } from "./gdpr";
+import { agent as hipaa } from "./hipaa";
+import { agent as pci } from "./pci";
+import { agent as soc2 } from "./soc2";
+import type { ComplianceAgent } from "./types";
+
+export const AGENTS: ComplianceAgent[] = [soc2, gdpr, pci, hipaa];
+
+export function getAgent(id: string): ComplianceAgent | undefined {
+  return AGENTS.find((a) => a.id === id);
+}
+
+export function defaultAgent(): ComplianceAgent {
+  return soc2;
+}
+```
+
+**SOC 2 lens** ([`packages/core/agents/soc2/index.ts`](packages/core/agents/soc2/index.ts)):
+
+```typescript
+import type { ComplianceAgent } from "../types";
+import { SYSTEM_PROMPT_PREFIX } from "./prompt";
+
+export const agent: ComplianceAgent = {
+  id: "soc2",
+  label: "SOC 2",
+  description:
+    "Trust Services Criteria-oriented narrative across the full technical control set (GitHub, AWS, policies).",
+  appliesTo: () => true,
+  systemPromptPrefix: SYSTEM_PROMPT_PREFIX,
+  frameworkMappingLabel:
+    "SOC 2 Trust Services Criteria: Common Criteria themes (CC6/CC7/CC8 emphasis; informal mapping)",
+};
+```
+
+Add a new lens by copying a folder under [`packages/core/agents/`](packages/core/agents/), implementing `ComplianceAgent`, and appending it to `AGENTS`.
+
+---
+
 ## Repository layout
 
 ```
@@ -161,7 +244,7 @@ The web app and API start together (`dev:all`). Point `NEXT_PUBLIC_API_URL` (or 
 
 ## License and support
 
-This repository is private to your organization unless otherwise published. For partnerships, deployment architecture, or custom control packs, contact your team lead.
+Provided for hackathon review and deployment evaluation.
 
 ---
 
