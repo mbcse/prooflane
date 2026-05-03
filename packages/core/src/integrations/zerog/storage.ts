@@ -2,11 +2,62 @@ import { Indexer, MemData } from "@0gfoundation/0g-storage-ts-sdk";
 import { ethers } from "ethers";
 import { storageScanRootUrl } from "./explorers";
 
+/** The 0G SDK logs every second while the indexer catches up; suppress unless ZERO_G_VERBOSE_STORAGE=1 */
+function withOptionalQuietSdkLogs<T>(run: () => Promise<T>): Promise<T> {
+  if (process.env.ZERO_G_VERBOSE_STORAGE === "1") {
+    return run();
+  }
+  const prev = console.log;
+  console.log = (...args: unknown[]) => {
+    const msg = args.map(String).join(" ");
+    if (msg.includes("Waiting for storage node to sync")) return;
+    prev.apply(console, args);
+  };
+  return run().finally(() => {
+    console.log = prev;
+  });
+}
+
 export type StoreEvidenceResult = {
   rootHash: string;
   txHash: string;
   storagescanUrl: string;
+  /** Set when upload was skipped: missing env, timeout waiting on indexer sync, or upload error fallback. */
+  degraded?: boolean;
 };
+
+function localEvidenceStore(payload: unknown): StoreEvidenceResult {
+  const json = JSON.stringify(payload);
+  const hash = Buffer.from(json).toString("hex").slice(0, 64);
+  const fakeTx = `0x${"0".repeat(64)}`;
+  return {
+    rootHash: `local-${hash.slice(0, 32)}`,
+    txHash: fakeTx,
+    storagescanUrl: storageScanRootUrl(`local-${hash.slice(0, 16)}`),
+    degraded: true,
+  };
+}
+
+function resolveUploadTimeoutMs(): number | null {
+  const raw = process.env.ZERO_G_STORAGE_UPLOAD_TIMEOUT_MS;
+  if (raw === undefined || raw === "") return 180_000;
+  const n = Number(raw);
+  if (!Number.isFinite(n)) return 180_000;
+  if (n <= 0) return null;
+  return n;
+}
+
+async function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  let id: ReturnType<typeof setTimeout>;
+  const deadline = new Promise<never>((_, reject) => {
+    id = setTimeout(() => reject(new Error(`${label} exceeded ${ms}ms`)), ms);
+  });
+  try {
+    return await Promise.race([promise, deadline]);
+  } finally {
+    clearTimeout(id!);
+  }
+}
 
 /**
  * Upload JSON evidence to 0G Storage (MemData + indexer upload).
@@ -19,17 +70,10 @@ export async function storeEvidence(payload: unknown): Promise<StoreEvidenceResu
   const pk = process.env.ZERO_G_STORAGE_PRIVATE_KEY;
 
   if (!rpcUrl || !indexerRpc || !pk) {
-    const json = JSON.stringify(payload);
-    const hash = Buffer.from(json).toString("hex").slice(0, 64);
-    const fakeTx = `0x${"0".repeat(64)}`;
     console.warn(
       "[0G] storeEvidence: ZERO_G_* not set. Using local content hash until keys are configured.",
     );
-    return {
-      rootHash: `local-${hash.slice(0, 32)}`,
-      txHash: fakeTx,
-      storagescanUrl: storageScanRootUrl(`local-${hash.slice(0, 16)}`),
-    };
+    return localEvidenceStore(payload);
   }
 
   const provider = new ethers.JsonRpcProvider(rpcUrl);
@@ -41,21 +85,38 @@ export async function storeEvidence(payload: unknown): Promise<StoreEvidenceResu
   const [, treeErr] = await memData.merkleTree();
   if (treeErr !== null) throw new Error(`Merkle tree: ${treeErr}`);
 
-  const [tx, uploadErr] = await indexer.upload(memData, rpcUrl, signer);
-  if (uploadErr !== null) throw new Error(`0G upload: ${uploadErr}`);
+  const timeoutMs = resolveUploadTimeoutMs();
+  const runUpload = () =>
+    withOptionalQuietSdkLogs(() => indexer.upload(memData, rpcUrl, signer));
 
-  let rootHash: string;
-  let txHash: string;
-  if (tx && typeof tx === "object" && "rootHash" in tx && "txHash" in tx) {
-    rootHash = String((tx as { rootHash: string }).rootHash);
-    txHash = String((tx as { txHash: string }).txHash);
-  } else {
-    throw new Error("Unexpected 0G upload response shape");
+  try {
+    const raced =
+      timeoutMs === null
+        ? await runUpload()
+        : await withTimeout(runUpload(), timeoutMs, "0G Storage upload (indexer sync)");
+
+    const [tx, uploadErr] = raced;
+    if (uploadErr !== null) throw new Error(`0G upload: ${uploadErr}`);
+
+    let rootHash: string;
+    let txHash: string;
+    if (tx && typeof tx === "object" && "rootHash" in tx && "txHash" in tx) {
+      rootHash = String((tx as { rootHash: string }).rootHash);
+      txHash = String((tx as { txHash: string }).txHash);
+    } else {
+      throw new Error("Unexpected 0G upload response shape");
+    }
+
+    return {
+      rootHash,
+      txHash,
+      storagescanUrl: storageScanRootUrl(rootHash),
+    };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    console.warn(
+      `[0G] storeEvidence: upload did not finish (${msg}). Continuing with local content hash so the run can complete.`,
+    );
+    return localEvidenceStore(payload);
   }
-
-  return {
-    rootHash,
-    txHash,
-    storagescanUrl: storageScanRootUrl(rootHash),
-  };
 }

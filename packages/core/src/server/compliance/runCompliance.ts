@@ -143,13 +143,22 @@ async function runComplianceWork(
     };
 
     const stored = await storeEvidence(evidenceBundle);
+    if (stored.degraded) {
+      await appendProgress(runId, {
+        kind: "evidence",
+        message:
+          "Evidence fingerprint recorded locally (0G upload skipped or timed out). Continuing to scoring and report.",
+      });
+    }
     const anchored = await anchorSnapshot(stored.txHash);
 
     const evidencePointer = stored.storagescanUrl;
 
     await appendProgress(runId, {
       kind: "evidence",
-      message: `Evidence anchored (root hash recorded). Computing weighted score…`,
+      message: stored.degraded
+        ? "Computing weighted score…"
+        : `Evidence anchored (root hash recorded). Computing weighted score…`,
     });
 
     await prisma.controlResult.createMany({
