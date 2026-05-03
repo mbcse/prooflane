@@ -64,7 +64,7 @@ flowchart LR
 
 - **`apps/web`:** Dashboard, onboarding, GitHub and AWS connection flows, compliance run launcher with live activity, run history and detail views, authentication (NextAuth-style session), public trust pages.
 - **`apps/api`:** REST API for organizations, integrations, compliance runs, reports, and GitHub webhook ingestion.
-- **`packages/core`:** Control definitions, evaluators (GitHub API, AWS SDK, policy document analysis), scoring, compliance orchestration, Prisma access, **0G Storage** uploads for evidence bundles, optional **0G Compute** (or compatible router) for narrative generation, report grounding so prose matches measured results.
+- **`packages/core`:** Control definitions, evaluators (GitHub API, AWS SDK, policy document analysis), scoring, compliance orchestration, Prisma access, **0G Storage** uploads for evidence bundles, **0G Compute** for the executive narrative layer when configured, plus compatible OpenAI-style routers where teams standardize on them, and report grounding so prose matches measured results.
 
 **Database:** PostgreSQL via Prisma (managed Neon or self-hosted). The schema covers users, organizations, integrations, compliance runs with optional progress logs, control results, policy uploads, and structured reports.
 
@@ -77,7 +77,7 @@ flowchart LR
 3. **Evaluation.** For each control, evaluators call GitHub or AWS APIs or analyze uploaded policy text. Results are PASS, FAIL, or UNKNOWN with human-readable messages and structured evidence payloads.
 4. **Evidence bundle.** Results are serialized into a single bundle (run metadata, timestamps, per-control outcomes). The bundle is uploaded through **0G Storage** when Galileo RPC, indexer, and wallet keys are configured. Uploads are content-addressed; a root hash and transaction hash tie the bundle to chain activity. If the network path does not complete within policy timeouts, the run still records a content fingerprint so scoring and reporting are never blocked.
 5. **Scoring.** A weighted formula produces an overall readiness score and category-level statistics.
-6. **Report.** A structured narrative is produced using configured **0G Compute** (quickstart) or an OpenAI-compatible router. Output is **grounded**: model copy is merged with live metrics so scores and remediation items stay faithful to evaluation results.
+6. **Report.** A structured narrative is produced through **0G Compute** when it is configured for your deployment, or through an OpenAI-compatible router. Output is **grounded**: generated copy is merged with live metrics so scores and remediation items stay faithful to evaluation results.
 7. **Persistence.** Reports, scores, hashes, and explorer links are stored on the compliance run for audit trails and UI display.
 
 ---
@@ -99,7 +99,7 @@ Controls carry framework tags (for example SOC 2, ISO 27001 themes, GDPR, PCI, H
 Prooflane integrates with **0G** on **Galileo testnet** to make compliance evidence more transparent and independently inspectable:
 
 1. **0G Storage.** Evidence bundles are written through the official TypeScript SDK and indexer. Successful uploads yield a root hash and transaction hash used as tamper-evident references and explorer links (Galileo transaction URLs).
-2. **0G Compute.** Optional narrative generation uses the published compute quickstart (OpenAI-compatible proxy). Router credentials are supported as an alternative deployment pattern.
+2. **0G Compute.** The executive narrative layer calls 0G Compute through its standard OpenAI-compatible API surface when you enable it in your environment. Teams may also route the same contract through a compatible gateway using their own credentials.
 
 The result is a product experience where a company can present compliance posture with the underlying evidence trail, not just marketing language.
 
@@ -114,7 +114,7 @@ apps/web/          Next.js UI and API routes for auth
 apps/api/          Express API (routes, webhooks)
 packages/core/     Domain logic, agents, evaluators, 0G clients, Prisma client output
 prisma/            Schema and SQL migrations
-scripts/           Operational helpers (for example 0G compute setup)
+scripts/           Operational and deployment helpers
 docker-compose.yml Local PostgreSQL and optional containerized app wiring
 ```
 
@@ -124,7 +124,7 @@ docker-compose.yml Local PostgreSQL and optional containerized app wiring
 
 - **Node.js** 20+
 - **PostgreSQL** (local Docker or hosted)
-- Optional: **0G** RPC URLs, indexer URL, and funded wallet keys for Storage and Compute on Galileo testnet
+- For **0G** anchoring on Galileo testnet: RPC URLs, indexer URL, and funded wallet keys for Storage and Compute
 
 ---
 
